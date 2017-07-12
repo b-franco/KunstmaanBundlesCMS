@@ -121,11 +121,12 @@ abstract class AdminListController extends Controller
         $helper = new $classname();
         $helper = $configurator->decorateNewEntity($helper);
 
-        $formType = $configurator->getAdminType($helper);
-        if (!is_object($formType) && is_string($formType)) {
-            $formType = $this->container->get($formType);
+        $formFqn = $formType = $configurator->getAdminType($helper);
+        if (is_object($formType)) {
+            $formFqn = get_class($formType);
+        } elseif ($this->container->has($formType)) {
+            $formFqn = get_class($this->container->get($formType));
         }
-        $formFqn = get_class($formType);
 
         $event = new AdaptSimpleFormEvent($request, $formFqn, $helper, $configurator->getAdminTypeOptions());
         $event = $this->container->get('event_dispatcher')->dispatch(Events::ADAPT_SIMPLE_FORM, $event);
